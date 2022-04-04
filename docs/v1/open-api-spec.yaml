@@ -1,0 +1,199 @@
+openapi: 3.0.2
+
+info:
+  description: |
+    This describes the PENNYLANE API.
+    # Introduction
+    This API is documented in **OpenAPI format**. In addition to standard
+    OpenAPI syntax we use a few [vendor extensions](https://github.com/Rebilly/ReDoc/blob/master/docs/redoc-vendor-extensions.md).
+    # Base URL
+      - https://api.https://www.pennylane.com/v1
+    # Authentication
+  version: "0.0.1"
+  title: PENNYLANE API
+  termsOfService: https://www.pennylane.com/
+  contact:
+    name: PENNYLANE
+    url: https://www.pennylane.com/
+    email: dondanidang@gmail.com
+
+externalDocs:
+  description: Find out more about PENNYLANE Mobile
+  url: 'https://www.pennylane.com/'
+
+security:
+  - APIKeyAuth: [ ]
+
+tags:
+  - name: recipes
+    description: |
+      Information about recipes.
+
+x-tagGroups:
+  - name: Resources
+    tags:
+      - recipes
+
+paths:
+  /recipes/search:
+    parameters:
+      - $ref: '#/components/parameters/Accept'
+      - $ref: '#/components/parameters/Accept-Language'
+      - $ref: '#/components/parameters/Content-Type'
+      - $ref: '#/components/parameters/Authorization'
+      - in: query
+        name: ingredients
+        type: string
+        example: "rice,bread"
+
+    get:
+      tags:
+        - recipes
+      summary: Search most relevant recipes based on ingredients
+      operationId: get_recipes_search
+      responses:
+        200:
+          description: Successful operation
+          content:
+            'application/json':
+              schema:
+                type: object
+                required:
+                  - recipes
+                  - page
+                  - total_count
+                properties:
+                  total_count:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                  page:
+                    type: integer
+                    format: int64
+                    minimum: 1
+                  recipes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RecipeModel"
+        500:
+          $ref: "#/components/responses/500"
+
+components:
+  parameters:
+    Accept:
+      description: Indicates the MIME type in which the request will be encoded
+      name: Accept
+      required: true
+      in: header
+      schema:
+        type: string
+        enum:
+          - application/json
+
+    Accept-Language:
+      description: Indicates the preferred language by the client
+      name: Accept-Language
+      required: true
+      in: header
+      schema:
+        type: string
+      example: es_ES
+
+    Authorization:
+      description: Access token required to consume this resource
+      name: Authorization
+      required: true
+      in: header
+      schema:
+        type: string
+      example: Bearer Zm9vQGJhci5jb206cHdk
+
+    Content-Type:
+      description: Used to indicate the media type of the resource
+      name: Content-Type
+      required: true
+      in: header
+      schema:
+        type: string
+        enum:
+          - application/json
+  schemas:
+    dateTimeType:
+      type: string
+      format: date-time
+      description: String defining a datetime. (ISO8601 format)
+
+    uuidType:
+      type: string
+      format: uuid
+      description: Random and Unique identifier for our entities. (uuid v4)
+      example: 1a1ea06c-0eb2d663-11e9ab14-bd873d93
+
+    # Model schemas
+    RecipeModel:
+      type: object
+      required:
+         - id
+         - name
+         - duration_in_mins
+         - category
+         - result_image_url
+         - ingredients
+      properties:
+        id:
+          $ref: "#/components/schemas/uuidType"
+        name:
+          type: string
+        duration_in_mins:
+          type: integer
+          format: int64
+          minimum: 0
+        category:
+          type: string
+        result_image_url:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: string
+
+    # Error schemas
+    GenericError:
+      type: object
+      properties:
+        id:
+          type: string
+          enum:
+            - "generic"
+        http_code:
+          type: integer
+          enum:
+            - 500
+        developer_message:
+          type: string
+          enum:
+            - "Generic, no handled runtime error. Contact with the backend team"
+        details:
+          type: object
+          description: Object with details about the error
+      required:
+        - id
+        - http_code
+        - developer_message
+        - details
+
+  responses:
+    500:
+      description: Internal server error
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: "#/components/schemas/GenericError"
+            required:
+              - error
+
+securitySchemes:
+  - bearerAuth: [ ]

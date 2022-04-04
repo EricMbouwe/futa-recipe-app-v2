@@ -1,0 +1,5 @@
+{
+ recipes: render(partial: 'v1/recipes/recipe', collection: @recipes, as: :recipe),
+ page: @page,
+ total_count: @total_count,
+}

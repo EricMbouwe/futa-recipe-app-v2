@@ -1,0 +1,1 @@
+Recipes::Populator.new.populate
