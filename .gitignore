@@ -32,3 +32,11 @@
 
 .env
 .DS_Store
+
+/web/node_modules
+/web/.gitignore
+/web/build
+/web/.env.*
+/web/.env.development.*
+/web/.env.test.*
+/web/.env.production.*

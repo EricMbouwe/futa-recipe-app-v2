@@ -45,3 +45,19 @@ run-docs:
 gen-json-schema:
 	@echo "$(CYAN_COLOR)==> Generating json-api-schema documentation...$(NO_COLOR)"
 	docker-compose run --rm -T openapi2schema > spec/support/api/v1/api-schema.json
+
+deploy-apii-pro:
+	@echo "$(CYAN_COLOR)==> Deploying API...$(NO_COLOR)"
+	git push heroku main
+
+migrate-pro dbmigrate-pro:
+	@echo "$(CYAN_COLOR)==> Running database migrations in production...$(NO_COLOR)"
+	heroku run rake db:migrate
+
+console-pro c-pro:
+	@echo "$(CYAN_COLOR)==> Starting rails console in production...$(NO_COLOR)"
+	heroku run rails console
+
+logs-prod:
+	@echo "$(CYAN_COLOR)==> Starting logs in production...$(NO_COLOR)"
+	heroku logs --tail
