@@ -1,5 +1,5 @@
 class RecipeIngredient < ApplicationRecord
-  attribute :ingredient_description, :string
+  belongs_to :recipe, inverse_of: :recipe_ingredients
 
-  belongs_to :recipe
+  validates :ingredient_description, presence: true
 end

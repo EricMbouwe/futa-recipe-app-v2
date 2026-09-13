@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :recipe do
-    name { Faker::Name.name }
-    category { Faker::Name.name }
-    result_image_url { Faker::Company.logo }
-    duration_in_mins { Faker::Name.name.size * 5 }
+    sequence(:name) { |n| "Recipe #{n}" }
+    category { "Main Dishes" }
+    sequence(:result_image_url) { |n| "https://images.example.com/recipes/#{n}.jpg" }
+    duration_in_mins { 30 }
   end
 end

@@ -1,0 +1,70 @@
+# Toutes les valeurs propres à votre serveur viennent de .env.kamal (voir .env.kamal.example).
+service: futa-recipes
+image: <%= ENV.fetch("KAMAL_IMAGE") %>
+
+# Premier déploiement : db:prepare charge le schéma puis ~106 000 lignes de recettes avant que Puma
+# écoute sur /up ; 180 s laisse cette marge (kamal-proxy n'attend que 30 s par défaut).
+deploy_timeout: 180
+
+servers:
+  web:
+    hosts:
+      - <%= ENV.fetch("KAMAL_SERVER") %>
+
+ssh:
+  user: <%= ENV.fetch("KAMAL_SSH_USER", "root") %>
+
+# kamal-proxy obtient le certificat Let's Encrypt et bascule sans interruption quand /up répond.
+proxy:
+  ssl: true
+  host: <%= ENV.fetch("KAMAL_HOST") %>
+  app_port: 3000
+  healthcheck:
+    path: /up
+
+registry:
+  server: <%= ENV.fetch("KAMAL_REGISTRY_SERVER", "ghcr.io") %>
+  username: <%= ENV.fetch("KAMAL_REGISTRY_USERNAME") %>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: <%= ENV.fetch("KAMAL_BUILDER_ARCH", "amd64") %>
+  # Construit le répertoire de travail tel quel, modifications non commitées comprises.
+  context: .
+  args:
+    VITE_API_KEY: "<%= ENV.fetch("VITE_API_KEY", "") %>"
+
+env:
+  clear:
+    RAILS_LOG_LEVEL: info
+    RATE_LIMIT_PER_MINUTE: "<%= ENV.fetch("RATE_LIMIT_PER_MINUTE", "60") %>"
+    POSTGRES_HOST: futa-recipes-db
+    POSTGRES_USER: futa
+    POSTGRES_DB: futa_recipes_production
+  secret:
+    - SECRET_KEY_BASE
+    - POSTGRES_PASSWORD
+    - API_KEY
+    - CORS_ORIGINS
+
+accessories:
+  db:
+    image: postgres:16-alpine
+    host: <%= ENV.fetch("KAMAL_SERVER") %>
+    # Exposé uniquement sur la boucle locale du serveur.
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_USER: futa
+        POSTGRES_DB: futa_recipes_production
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  dbc: app exec --interactive --reuse "bin/rails dbconsole"
+  seed: app exec --reuse "bin/rails db:seed"
+  logs: app logs -f

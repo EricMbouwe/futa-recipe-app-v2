@@ -1,0 +1,59 @@
+name: futa-recipes
+
+x-app: &app
+  build:
+    context: .
+    target: development
+  image: futa-recipes:development
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    POSTGRES_HOST: db
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+  volumes:
+    - .:/rails
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  api:
+    <<: *app
+    ports:
+      - "${API_PORT:-3000}:3000"
+    tty: true
+    stdin_open: true
+
+  # Commandes ponctuelles (console, migrations, tests) : aucun port publié, aucun nom fixe.
+  tools:
+    <<: *app
+    profiles: [ "tools" ]
+    command: [ "bash" ]
+
+  docs:
+    image: redocly/redoc:v2.5.3
+    profiles: [ "docs" ]
+    ports:
+      - "${DOCS_PORT:-8080}:80"
+    volumes:
+      - ./docs/v1/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro
+    environment:
+      SPEC_URL: openapi.yaml
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:

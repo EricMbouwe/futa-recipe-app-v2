@@ -1,0 +1,25 @@
+[
+  {
+    "title": "Golden Sweet Cornbread",
+    "cook_time": 25,
+    "prep_time": 10,
+    "ingredients": [ "1 cup all-purpose flour", "1 cup yellow cornmeal" ],
+    "category": "Cornbread",
+    "image": "https://images.example.com/cornbread.jpg"
+  },
+  {
+    "title": "Monkey Bread I",
+    "cook_time": 35,
+    "prep_time": 15,
+    "ingredients": [ "3 packages refrigerated biscuit dough" ],
+    "category": "",
+    "image": "https://images.example.com/monkey-bread.jpg"
+  },
+  {
+    "title": "Overnight Oats",
+    "prep_time": 5,
+    "ingredients": [],
+    "category": "Breakfast",
+    "image": "https://images.example.com/oats.jpg"
+  }
+]

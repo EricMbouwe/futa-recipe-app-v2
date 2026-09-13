@@ -4,5 +4,5 @@
   duration_in_mins: recipe.duration_in_mins,
   category: recipe.category,
   result_image_url: recipe.result_image_url,
-  ingredients: recipe.recipe_ingredients.map(&:ingredient_description),
+  ingredients: recipe.recipe_ingredients.map(&:ingredient_description)
 }

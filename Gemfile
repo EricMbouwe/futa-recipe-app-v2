@@ -1,55 +1,30 @@
-source 'https://rubygems.org'
-ruby '3.0.3'
+source "https://rubygems.org"
 
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem 'rails', '~> 6.1.4', '>= 6.1.4.1'
-# Use postgresql as the database for Active Record
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-# gem 'jbuilder', '~> 2.7'
-# Use Redis adapter to run Action Cable in production
-# gem 'redis', '~> 4.0'
-# Use Active Model has_secure_password
-gem 'bcrypt', '~> 3.1.7'
-# Use Active Storage variant
-# gem 'image_processing', '~> 1.2'
-# Reduces boot times through caching; required in config/boot.rb
-gem 'bootsnap', '>= 1.4.4', require: false
-gem 'dry-types', '~> 1.4.0'
-gem 'dry-validation', '~> 1.5.0'
-gem 'jb', '~> 0.8.0'
-gem "jsonb_accessor"
-gem 'json-schema'
-gem 'money'
-gem 'money-rails', '~>1.12'
-gem 'oj', '~> 3.10.5'
-gem 'pgreset'
-gem 'pg', '>= 0.18', '< 2.0'
-gem 'pry-rails'
-# Use Puma as the app server
-gem 'puma', '~> 5.0'
-gem 'rack-cors'
+ruby file: ".ruby-version"
+
+gem "rails", "~> 7.2.3", ">= 7.2.3.2"
+# json 3.0 a supprimé la tolérance de la clé quirks_mode encore envoyée par
+# ActiveSupport::JSON.encode (Rails 7.2.3.2), ce qui lève une ArgumentError ;
+# on reste sur la dernière série 2.x, compatible.
+gem "json", "~> 2.9"
+gem "pg", "~> 1.6"
+gem "puma", "~> 6.6"
+gem "bootsnap", require: false
+gem "dry-validation", "~> 1.11"
+gem "jb", "~> 0.8.2"
+gem "rack-cors", "~> 3.0"
+gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'awesome_print'
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
-  # A library for generating fake data such as names, addresses, and phone
-  gem 'faker', :git => 'https://github.com/faker-ruby/faker.git', :branch => 'master'
-  # A library for setting up Ruby objects as test data.
-  gem 'factory_bot_rails'
-  # Rspec
-  gem 'rspec-rails', '~> 5.0.0'
-end
-
-group :development do
-  gem 'listen', '~> 3.3'
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
+  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "brakeman", require: false
+  gem "rubocop-rails-omakase", require: false
+  gem "factory_bot_rails", "~> 6.5"
+  gem "rspec-rails", "~> 8.0"
 end
 
 group :test do
-  gem 'rspec_junit_formatter'
+  gem "committee-rails", "~> 0.10"
+  gem "rspec_junit_formatter", "~> 0.6"
+  gem "simplecov", "~> 1.3", require: false
 end
-
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
