@@ -1,33 +1,31 @@
-# SQLite. Versions 3.8.0 and up are supported.
-#   gem install sqlite3
-#
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem 'sqlite3'
-#
+# Développement et test : connexion par variables séparées, une base par environnement.
+# Production : DATABASE_URL si elle est définie, sinon les variables POSTGRES_*. Ne jamais définir
+# DATABASE_URL en développement : Rails l'appliquerait aussi à l'environnement de test, qui
+# écraserait alors la base de développement.
 default: &default
   adapter: postgresql
   encoding: unicode
-  # For details on connection pooling, see Rails configuration guide
-  # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: <%= ENV.fetch("PENNYLANE_DB_HOST") %>
-  port: <%= ENV.fetch("PENNYLANE_DB_PORT") %>
-  database: <%= ENV.fetch("PENNYLANE_DB_DATABASE") %>
-  username: <%= ENV.fetch("PENNYLANE_DB_USER") %>
-  password: <%= ENV.fetch("PENNYLANE_DB_PASSWORD") %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  host: <%= ENV.fetch("POSTGRES_HOST", "localhost") %>
+  port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
+  username: <%= ENV.fetch("POSTGRES_USER", "postgres").to_json %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD", "postgres").to_json %>
 
 development:
   <<: *default
+  database: futa_recipes_development
 
-# Warning: The database defined as "test" will be erased and
-# re-generated from your development database when you run "rake".
-# Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: my_api_test
+  database: futa_recipes_test
 
-pre:
-  <<: *default
-
-pro:
-  <<: *default
+production:
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  url: <%= ENV["DATABASE_URL"] %>
+  host: <%= ENV.fetch("POSTGRES_HOST", "localhost") %>
+  port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
+  username: <%= ENV["POSTGRES_USER"].to_json %>
+  password: <%= ENV["POSTGRES_PASSWORD"].to_json %>
+  database: <%= ENV["POSTGRES_DB"] %>

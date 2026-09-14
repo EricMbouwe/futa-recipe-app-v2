@@ -1,0 +1,14 @@
+#!/bin/bash -e
+
+# jemalloc réduit la fragmentation mémoire de Ruby.
+if [ -z "${LD_PRELOAD+x}" ] && [ -f /usr/lib/*/libjemalloc.so.2 ]; then
+  export LD_PRELOAD="$(echo /usr/lib/*/libjemalloc.so.2)"
+fi
+
+if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
+  # Un arrêt brutal du conteneur laisse ce fichier derrière lui et bloque le redémarrage.
+  rm -f tmp/pids/server.pid
+  ./bin/rails db:prepare
+fi
+
+exec "${@}"

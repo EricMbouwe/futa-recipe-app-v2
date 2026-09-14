@@ -1,40 +1,24 @@
 require_relative "boot"
 
 require "rails"
-# Pick the frameworks you want:
 require "active_model/railtie"
-require "active_job/railtie"
 require "active_record/railtie"
-require "active_storage/engine"
 require "action_controller/railtie"
-require "action_mailer/railtie"
-require "action_mailbox/engine"
-require "action_text/engine"
 require "action_view/railtie"
-require "action_cable/engine"
-# require "sprockets/railtie"
-require "rails/test_unit/railtie"
 
-# Require the gems listed in Gemfile, including any gems
-# you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-module Src
+module FutaRecipes
   class Application < Rails::Application
-    # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
-
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
-
-    # Only loads a smaller set of middleware suitable for API only apps.
-    # Middleware like session, flash, cookies can be added back manually.
-    # Skip views, helpers and assets when generating a new resource.
+    config.load_defaults 7.2
+    config.autoload_lib(ignore: %w[ assets tasks ])
     config.api_only = true
+
+    # Clé d'API optionnelle : si elle est vide, l'API est publique.
+    config.x.api_key = ENV["API_KEY"].presence
+    # Requêtes par minute et par IP sur /v1. Compteur en mémoire, propre à chaque processus Puma.
+    # Absente ou vide -> 60 ; une valeur non numérique doit toujours faire échouer le démarrage.
+    config.x.rate_limit_per_minute = Integer(ENV["RATE_LIMIT_PER_MINUTE"].presence || 60)
+    config.x.rate_limit_store = ActiveSupport::Cache::MemoryStore.new
   end
 end

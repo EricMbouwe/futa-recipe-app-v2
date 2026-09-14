@@ -1,82 +1,75 @@
 module Recipes
+  # Recherche des recettes contenant des ingrédients, entièrement en SQL :
+  # filtre indexé (pg_trgm), score, ordre total et pagination côté base.
   class Searcher
     DEFAULT_COUNT_PER_PAGE = 100
     DEFAULT_PAGE = 1
+
     attr_reader :ingredients, :count_per_page, :page
 
-    # Initialize a new CustomerAccounts::Creator.
-    #
-    # ingredients - The Array of String with ingredients to search recipes.
-    # count_per_page - The Integer with the total of Recipes to return.
-    # page - The Integer with cursor of where to start.
-    #
-    def initialize(ingredients:, count_per_page: nil, page: nil)
-      @ingredients = ingredients
-      @count_per_page = count_per_page ? count_per_page : DEFAULT_COUNT_PER_PAGE
-      @page = page ? page : DEFAULT_PAGE
+    # Motif d'expression régulière PostgreSQL (ARE) pour un terme, en mot entier,
+    # au singulier ou au pluriel anglais : "egg" → \megg(s|es)?\M, "berry" → \mberr(y|ies)\M.
+    def self.pattern_for(ingredient)
+      singular = ingredient.singularize
+
+      stem, suffix =
+        if singular.end_with?("y")
+          [ singular.delete_suffix("y"), "(y|ies)" ]
+        else
+          [ singular, "(s|es)?" ]
+        end
+
+      "\\m#{Regexp.escape(stem)}#{suffix}\\M"
     end
 
-    # Search recipes that contain ingredients.
-    #
-    # Returns:
-    #   - An Array of Recipes ordered by recipe that contains most ingredient first
-    #   - An Integer with the current page.
-    #   - An Integer with the total found.
+    # ingredients    - Array de String normalisés (voir Recipes::IngredientList).
+    # count_per_page - Integer, taille de page (défaut 100).
+    # page           - Integer, à partir de 1 (défaut 1).
+    def initialize(ingredients:, count_per_page: nil, page: nil)
+      @ingredients = ingredients
+      @count_per_page = count_per_page || DEFAULT_COUNT_PER_PAGE
+      @page = page || DEFAULT_PAGE
+    end
+
+    # Renvoie [ recettes de la page, page, nombre total de recettes trouvées ].
     def search
-      return [], page, 0  unless ingredients.present?
+      return [ [], page, 0 ] if ingredients.empty?
 
-      current_recipes = current_ordered_recipe_ids.map do |recipe_id|
-        current_recipe_by_ids[recipe_id]
-      end
-
-      return current_recipes, page, ordered_recipe_ids.count
+      [ recipes_for_page, page, total_count ]
     end
 
     private
 
-    def current_recipe_by_ids
-      @current_recipe_by_ids ||= begin
-        return {} unless current_ordered_recipe_ids.any?
+    def recipes_for_page
+      ids = matching_ingredients
+        .group(:recipe_id)
+        .select(:recipe_id, "#{score_sql} AS score")
+        .order(Arel.sql("score DESC"), :recipe_id)
+        .limit(count_per_page)
+        .offset((page - 1) * count_per_page)
+        .map(&:recipe_id)
 
-        Recipe.includes(:recipe_ingredients).where(id: current_ordered_recipe_ids).index_by(&:id)
-      end
+      recipes_by_id = Recipe.includes(:recipe_ingredients).where(id: ids).index_by(&:id)
+      ids.map { |id| recipes_by_id.fetch(id) }
     end
 
-    def current_ordered_recipe_ids
-      @current_ordered_recipe_ids ||= begin
-        recipe_ids_in_groups = ordered_recipe_ids.in_groups_of(count_per_page)
-
-        page <= recipe_ids_in_groups.count ? recipe_ids_in_groups[page - 1].compact : []
-      end
+    def total_count
+      matching_ingredients.distinct.count(:recipe_id)
     end
 
-    def ordered_recipe_ids
-      @ordered_recipe_ids ||= begin
-        recipe_ingredients.group_by(&:recipe_id).values.map do |ing_group|
-          ingredient_descriptions = ing_group.map(&:ingredient_description).join(",")
-
-          ingredient_matches_count = ingredients.select do |ingredient|
-            ingredient_descriptions.include?(ingredient)
-          end.count
-
-          {
-            recipe_id: ing_group.first.recipe_id,
-            ingredient_matches_count:  ingredient_matches_count,
-          }
-        end.sort_by{ |data| -data[:ingredient_matches_count] }.
-        map{ |data| data[:recipe_id]}
-      end
+    def matching_ingredients
+      RecipeIngredient.where("recipe_ingredients.ingredient_description ~* ANY (ARRAY[?])", patterns)
     end
 
-    def recipe_ingredients
-      query = nil
+    # Une recette gagne un point par terme trouvé, quel que soit le nombre de lignes qui le contiennent.
+    def score_sql
+      patterns.map do |pattern|
+        RecipeIngredient.sanitize_sql_array([ "bool_or(recipe_ingredients.ingredient_description ~* ?)::int", pattern ])
+      end.join(" + ")
+    end
 
-      ingredients.each do |ingredient|
-        query = query ? query.or(RecipeIngredient.where("ingredient_description LIKE ?", "%#{ingredient}%")) :
-                        RecipeIngredient.where("ingredient_description LIKE ?", "%#{ingredient}%")
-      end
-
-      query
+    def patterns
+      @patterns ||= ingredients.map { |ingredient| self.class.pattern_for(ingredient) }
     end
   end
 end

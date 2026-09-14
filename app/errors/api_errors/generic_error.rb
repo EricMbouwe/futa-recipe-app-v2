@@ -1,16 +1,26 @@
 module ApiErrors
+  # Erreur imprévue. Le client ne reçoit que l'error_id, qui permet de retrouver la trace dans les logs.
   class GenericError < ApiError
-    def initialize(details = {})
-      @http_code          = 500 #Internal server error
-      @id                 = 'generic'
-      @developer_message  = 'Generic, no handled runtime error. Contact with the backend team'
-      details             = details.is_a?(Hash) ? details : { message: details }
+    attr_reader :error_id
 
-      unless Rails.env.development? || Rails.env.test? || Rails.env.pre_production?
-        details = { error_id: details.fetch(:error_id) }
+    def initialize(exception: nil, error_id: SecureRandom.uuid, expose_internals: Rails.env.local?)
+      @error_id = error_id
+      details = { error_id: }
+
+      if expose_internals && exception
+        details.merge!(
+          exception: exception.class.name,
+          message: exception.message,
+          app_traces: Rails.backtrace_cleaner.clean(exception.backtrace || [])
+        )
       end
 
-      @details = details
+      super(
+        http_code: 500,
+        id: "generic",
+        developer_message: "Unexpected server error. Quote the error_id when reporting it.",
+        details:
+      )
     end
   end
 end

@@ -1,16 +1,12 @@
-# Be sure to restart your server when you modify this file.
+# CORS désactivé par défaut : le front est servi par la même origine que l'API.
+# CORS_ORIGINS="https://app.example.com,https://admin.example.com" l'ouvre à des clients tiers, en lecture seule.
+cors_origins = ENV.fetch("CORS_ORIGINS", "").split(",").map(&:strip).compact_blank
 
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin AJAX requests.
-
-# Read more: https://github.com/cyu/rack-cors
-
-Rails.application.config.middleware.insert_before 0, Rack::Cors do
-  allow do
-    origins '*'
-
-    resource '*',
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head]
+if cors_origins.any?
+  Rails.application.config.middleware.insert_before 0, Rack::Cors do
+    allow do
+      origins(*cors_origins)
+      resource "/v1/*", headers: :any, methods: %i[ get options head ]
+    end
   end
 end

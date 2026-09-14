@@ -30,13 +30,17 @@
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 
-.env
+/.env
+/.env.production
+/.env.kamal
+/coverage/
+/spec/examples.txt
 .DS_Store
 
-/web/node_modules
-/web/.gitignore
-/web/build
-/web/.env.*
-/web/.env.development.*
-/web/.env.test.*
-/web/.env.production.*
+/web/node_modules/
+/web/dist/
+/web/.env
+/web/.env.local
+/web/.env.*.local
+
+/backups/

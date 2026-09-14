@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+require "rubygems"
+require "bundler/setup"
+
+# Configuration explicite : évite qu'un .rubocop.yml parent soit pris en compte.
+ARGV.unshift("--config", File.expand_path("../.rubocop.yml", __dir__))
+
+load Gem.bin_path("rubocop", "rubocop")
