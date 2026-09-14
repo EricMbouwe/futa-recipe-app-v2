@@ -215,7 +215,7 @@ GEM
       prettyprint
     prettyprint (0.2.0)
     prism (1.9.0)
-    puma (6.6.1)
+    puma (8.0.2)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.7)
@@ -360,7 +360,7 @@ DEPENDENCIES
   jb (~> 0.8.2)
   json (~> 2.9)
   pg (~> 1.6)
-  puma (~> 6.6)
+  puma (~> 8.0)
   rack-cors (~> 3.0)
   rails (~> 7.2.3, >= 7.2.3.2)
   rspec-rails (~> 8.0)

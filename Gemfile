@@ -8,7 +8,7 @@ gem "rails", "~> 7.2.3", ">= 7.2.3.2"
 # on reste sur la dernière série 2.x, compatible.
 gem "json", "~> 2.9"
 gem "pg", "~> 1.6"
-gem "puma", "~> 6.6"
+gem "puma", "~> 8.0"
 gem "bootsnap", require: false
 gem "dry-validation", "~> 1.11"
 gem "jb", "~> 0.8.2"
