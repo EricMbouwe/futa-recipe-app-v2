@@ -6,7 +6,7 @@ gem "rails", "~> 7.2.3", ">= 7.2.3.2"
 # json 3.0 a supprimé la tolérance de la clé quirks_mode encore envoyée par
 # ActiveSupport::JSON.encode (Rails 7.2.3.2), ce qui lève une ArgumentError ;
 # on reste sur la dernière série 2.x, compatible.
-gem "json", "~> 2.9"
+gem "json", "~> 3.0"
 gem "pg", "~> 1.6"
 gem "puma", "~> 6.6"
 gem "bootsnap", require: false
