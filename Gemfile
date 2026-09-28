@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 ruby file: ".ruby-version"
 
-gem "rails", "~> 7.2.3", ">= 7.2.3.2"
+gem "rails", "~> 8.1.4"
 # json 3.0 a supprimé la tolérance de la clé quirks_mode encore envoyée par
 # ActiveSupport::JSON.encode (Rails 7.2.3.2), ce qui lève une ArgumentError ;
 # on reste sur la dernière série 2.x, compatible.
