@@ -11,7 +11,7 @@ gem "pg", "~> 1.6"
 gem "puma", "~> 6.6"
 gem "bootsnap", require: false
 gem "dry-validation", "~> 1.11"
-gem "jb", "~> 0.8.2"
+gem "jb", "~> 0.9.0"
 gem "rack-cors", "~> 3.0"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
