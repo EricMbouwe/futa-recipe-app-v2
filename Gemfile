@@ -25,6 +25,6 @@ end
 
 group :test do
   gem "committee-rails", "~> 0.10"
-  gem "rspec_junit_formatter", "~> 0.6"
+  gem "rspec_junit_formatter", "~> 0.8"
   gem "simplecov", "~> 1.3", require: false
 end
